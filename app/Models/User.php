@@ -55,4 +55,9 @@ class User extends Authenticatable
     {
         return $this->memberships()->where('active', true)->where('end_date', '>', now())->exists();
     }
+
+    public function devices()
+    {
+        return $this->hasMany(UserDevice::class);
+    }
 }
