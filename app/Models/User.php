@@ -46,17 +46,36 @@ class User extends Authenticatable
         ];
     }
 
-    public function memberships()
+    public function memberships(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(Membership::class);
     }
 
-    protected function hasMembership()
+    public function hasMembershipPlan(): bool
     {
-        return $this->memberships()->where('active', true)->where('end_date', '>', now())->exists();
+        return $this->memberships()
+            ->where('active', true)
+            ->where('end_date', '>', now())
+            ->exists();
     }
 
-    public function devices()
+    public function getCurrentPlan()
+    {
+        $activeMembership = $this->memberships()
+            ->where('active', true)
+            ->where('start_date', '<=', now())
+            ->where('end_date', '>=', now())
+            ->latest()
+            ->first();
+
+        if (!$activeMembership) {
+            return null;
+        }
+
+        return Plan::find($activeMembership->plan_id);
+    }
+
+    public function devices(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(UserDevice::class);
     }
